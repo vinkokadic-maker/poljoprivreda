@@ -1,0 +1,9 @@
+{
+  "name": "Poljoprivreda",
+  "short_name": "Poljoprivreda",
+  "description": "Evidencija peradarstva, ratarstva i svinja",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f5f7",
+  "theme_color": "#2e7d32"
+}

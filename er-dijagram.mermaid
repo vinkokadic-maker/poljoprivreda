@@ -1,0 +1,132 @@
+erDiagram
+    GOSPODARSTVO ||--o{ KORISNIK : ima
+    GOSPODARSTVO ||--o{ PARTNER : ima
+    GOSPODARSTVO ||--o{ OBJEKT : ima
+    GOSPODARSTVO ||--o{ PARCELA : ima
+    GOSPODARSTVO ||--o{ SVINJE_TURNUS : ima
+    GOSPODARSTVO ||--o{ DOKUMENT : ima
+    GOSPODARSTVO ||--o{ TRANSAKCIJA : ima
+
+    OBJEKT ||--o{ TURNUS : sadrzi
+    TURNUS ||--o{ JATO : "ima 1..n kanala"
+    TURNUS ||--o{ DNEVNI_UNOS : biljezi
+    TURNUS ||--o{ PRIMJENA_TRETMANA : biljezi
+    TURNUS ||--o{ HRANA_EVIDENCIJA : biljezi
+
+    PARTNER ||--o{ JATO : "dobavljac/kupac"
+    JATO ||--o{ HRANA_EVIDENCIJA : "opcionalno"
+    JATO ||--o{ PRIMJENA_TRETMANA : "opcionalno"
+
+    PARCELA ||--o{ SEZONA_KULTURE : "po godini"
+    SEZONA_KULTURE ||--o{ OPERACIJA_KULTURE : ima
+
+    DOKUMENT ||--o{ DOKUMENT_STAVKA : sadrzi
+    DOKUMENT ||--o{ HRANA_EVIDENCIJA : "izvor"
+    DOKUMENT ||--o{ TRANSAKCIJA : "izvor"
+
+    TURNUS ||--o{ TRANSAKCIJA : "trosak/prihod"
+    JATO ||--o{ TRANSAKCIJA : "trosak/prihod"
+    PARCELA ||--o{ TRANSAKCIJA : "trosak/prihod"
+    SEZONA_KULTURE ||--o{ TRANSAKCIJA : "trosak/prihod"
+    SVINJE_TURNUS ||--o{ TRANSAKCIJA : "trosak/prihod"
+
+    GOSPODARSTVO {
+        uuid id PK
+        text naziv
+        text oib
+        text mibpg
+    }
+    OBJEKT {
+        uuid id PK
+        uuid gospodarstvo_id FK
+        text naziv
+        int kapacitet
+        text skov_id
+    }
+    TURNUS {
+        uuid id PK
+        uuid objekt_id FK
+        date datum_useljenja
+        date datum_izlova
+        enum status
+    }
+    JATO {
+        uuid id PK
+        uuid turnus_id FK
+        enum model
+        uuid dobavljac_id FK
+        uuid kupac_id FK
+        int broj_useljenih
+        numeric cijena_pilica
+        numeric cijena_otkupa_kg
+    }
+    DNEVNI_UNOS {
+        uuid id PK
+        uuid turnus_id FK
+        date datum
+        int uginuca
+        numeric prosj_tezina_g
+        numeric voda_l
+        numeric temperatura_c
+        numeric vlaga_posto
+    }
+    HRANA_EVIDENCIJA {
+        uuid id PK
+        uuid turnus_id FK
+        uuid jato_id FK
+        enum smjer
+        numeric kolicina_kg
+        bool vlastita_hrana
+        uuid dokument_id FK
+    }
+    PARCELA {
+        uuid id PK
+        text naziv
+        text arkod
+        numeric povrsina_ha
+    }
+    SEZONA_KULTURE {
+        uuid id PK
+        uuid parcela_id FK
+        int godina
+        text kultura
+        numeric prinos_t
+    }
+    OPERACIJA_KULTURE {
+        uuid id PK
+        uuid sezona_id FK
+        text tip
+        text materijal
+        numeric kolicina
+    }
+    SVINJE_TURNUS {
+        uuid id PK
+        date datum_nabave
+        int broj_prasadi
+        date datum_prodaje
+        enum status
+    }
+    DOKUMENT {
+        uuid id PK
+        enum tip
+        enum status
+        text datoteka_url
+        jsonb ai_podaci
+        numeric ai_pouzdanost
+    }
+    DOKUMENT_STAVKA {
+        uuid id PK
+        uuid dokument_id FK
+        text opis
+        numeric kolicina
+        numeric iznos
+    }
+    TRANSAKCIJA {
+        uuid id PK
+        date datum
+        enum smjer
+        enum kategorija
+        numeric iznos
+        uuid turnus_id FK
+        uuid parcela_id FK
+    }

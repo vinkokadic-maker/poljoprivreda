@@ -1,0 +1,14 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next
+/out
+
+# env (TAJNI ključevi — NIKAD ne commitati)
+.env.local
+.env
+
+# misc
+.DS_Store
+*.log
