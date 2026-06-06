@@ -9,6 +9,11 @@
 .env.local
 .env
 
+# osobne bilješke s tajnama (NIKAD na git)
+claude api key.txt
+pass za supabase.txt
+*.key
+
 # misc
 .DS_Store
 *.log
