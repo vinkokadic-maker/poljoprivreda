@@ -12,7 +12,15 @@ export default function Dashboard() {
   const [objekti, setObjekti] = useState([])
   const [turnusi, setTurnusi] = useState([])
   const [partneri, setPartneri] = useState([])
+  const [korisnici, setKorisnici] = useState([])
   const [greska, setGreska] = useState('')
+
+  // forma za članove
+  const [clanIme, setClanIme] = useState('')
+  const [clanEmail, setClanEmail] = useState('')
+  const [clanLozinka, setClanLozinka] = useState('')
+  const [clanBusy, setClanBusy] = useState(false)
+  const [clanPoruka, setClanPoruka] = useState('')
 
   // forme
   const [objektNaziv, setObjektNaziv] = useState('')
@@ -49,7 +57,41 @@ export default function Dashboard() {
     const { data: p } = await supabase.from('partner').select('*').order('naziv')
     setPartneri(p || [])
 
+    const { data: k } = await supabase.from('korisnik').select('*').order('kreirano')
+    setKorisnici(k || [])
+
     setLoading(false)
+  }
+
+  async function dodajClana(e) {
+    e.preventDefault()
+    setClanPoruka('')
+    setGreska('')
+    if (!clanEmail || !clanLozinka) { setGreska('Email i lozinka su obavezni.'); return }
+    setClanBusy(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/dodaj-korisnika', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ ime: clanIme, email: clanEmail, lozinka: clanLozinka }),
+      })
+      const out = await res.json()
+      if (out.ok) {
+        setClanPoruka(`Korisnik ${clanEmail} je dodan. Neka se prijavi s tom lozinkom.`)
+        setClanIme(''); setClanEmail(''); setClanLozinka('')
+        ucitaj()
+      } else {
+        setGreska(out.error || 'Greška kod dodavanja.')
+      }
+    } catch (err) {
+      setGreska(err.message || 'Greška kod dodavanja.')
+    } finally {
+      setClanBusy(false)
+    }
   }
 
   async function dodajPartnera(e) {
@@ -199,6 +241,30 @@ export default function Dashboard() {
             </select>
             <button type="submit" className="sek">+ Dodaj partnera</button>
           </form>
+        </div>
+
+        {/* ČLANOVI */}
+        <div className="card">
+          <h2>Članovi (pristup farmi)</h2>
+          {korisnici.map((k) => (
+            <div className="list-item" key={k.id}>
+              <span className="naziv">{k.ime || k.email}</span>
+              <span className="muted"> · {k.uloga}{k.ime ? ` · ${k.email}` : ''}</span>
+            </div>
+          ))}
+          <form onSubmit={dodajClana}>
+            <label>Ime nove osobe</label>
+            <input value={clanIme} onChange={(e) => setClanIme(e.target.value)} placeholder="npr. Marijan" />
+            <label>Email</label>
+            <input type="email" value={clanEmail} onChange={(e) => setClanEmail(e.target.value)} placeholder="osoba@email.com" />
+            <label>Početna lozinka (min. 6 znakova)</label>
+            <input value={clanLozinka} onChange={(e) => setClanLozinka(e.target.value)} placeholder="lozinka koju mu javiš" />
+            {clanPoruka && <div className="muted" style={{ marginTop: 8, color: 'var(--zelena-tamna)' }}>{clanPoruka}</div>}
+            <button type="submit" className="sek" disabled={clanBusy}>{clanBusy ? 'Dodajem…' : '+ Dodaj člana'}</button>
+          </form>
+          <p className="muted" style={{ marginTop: 8 }}>
+            Osoba dobije pristup svim podacima farme. Javi joj email i lozinku — promijenit će je nakon prijave.
+          </p>
         </div>
       </div>
     </>
